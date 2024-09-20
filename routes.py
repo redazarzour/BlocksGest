@@ -3,6 +3,7 @@ from main import app, db
 from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift
 from utils import update_inventory, create_production_schedule, process_sale
 from datetime import datetime
+from sqlalchemy import func
 
 @app.route('/')
 def index():
@@ -90,15 +91,13 @@ def inventory_report():
 
 @app.route('/api/reports/production', methods=['GET'])
 def production_report():
-    schedules = ProductionSchedule.query.all()
+    schedules = ProductionSchedule.query.order_by(ProductionSchedule.scheduled_date).all()
     return jsonify([{'product_name': s.product_name, 'quantity': s.quantity, 'scheduled_date': s.scheduled_date.isoformat()} for s in schedules])
 
 @app.route('/api/reports/sales', methods=['GET'])
 def sales_report():
-    transactions = SalesTransaction.query.all()
+    transactions = SalesTransaction.query.order_by(SalesTransaction.transaction_date).all()
     return jsonify([{'product_name': t.product_name, 'quantity': t.quantity, 'total_amount': t.total_amount, 'transaction_date': t.transaction_date.isoformat()} for t in transactions])
-
-# New routes for labor management
 
 @app.route('/labor')
 def labor():
@@ -153,10 +152,14 @@ def add_shift():
 @app.route('/api/reports/labor', methods=['GET'])
 def labor_report():
     workers = Worker.query.all()
-    return jsonify([{
-        'name': w.name,
-        'position': w.position,
-        'hire_date': w.hire_date.isoformat(),
-        'hourly_rate': w.hourly_rate,
-        'total_hours': sum(shift.hours_worked for shift in w.shifts)
-    } for w in workers])
+    worker_data = []
+    for worker in workers:
+        total_hours = db.session.query(func.sum(Shift.hours_worked)).filter(Shift.worker_id == worker.id).scalar() or 0
+        worker_data.append({
+            'name': worker.name,
+            'position': worker.position,
+            'hire_date': worker.hire_date.isoformat(),
+            'hourly_rate': worker.hourly_rate,
+            'total_hours': float(total_hours)
+        })
+    return jsonify(worker_data)
