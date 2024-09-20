@@ -1,32 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}Reports{% endblock %}
+{% block title %}{{ _('Reports and Analytics') }}{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Reports and Analytics</h1>
+<h1 class="mb-4">{{ _('Reports and Analytics') }}</h1>
 
 <div class="row">
     <div class="col-md-6 mb-4">
-        <h2>Inventory Report</h2>
+        <h2>{{ _('Inventory Analysis') }}</h2>
         <canvas id="inventory-chart"></canvas>
         <div id="inventory-details" class="mt-3"></div>
+        <button id="export-inventory" class="btn btn-primary mt-2">{{ _('Export Inventory Report') }}</button>
     </div>
     <div class="col-md-6 mb-4">
-        <h2>Production Report</h2>
+        <h2>{{ _('Production Trends') }}</h2>
         <canvas id="production-chart"></canvas>
         <div id="production-details" class="mt-3"></div>
+        <button id="export-production" class="btn btn-primary mt-2">{{ _('Export Production Report') }}</button>
     </div>
 </div>
 <div class="row">
     <div class="col-md-6 mb-4">
-        <h2>Sales Report</h2>
+        <h2>{{ _('Sales Performance') }}</h2>
+        <div class="form-group">
+            <label for="sales-date-range">Date Range:</label>
+            <select id="sales-date-range" class="form-control">
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last 365 days</option>
+            </select>
+        </div>
         <canvas id="sales-chart"></canvas>
         <div id="sales-details" class="mt-3"></div>
+        <button id="export-sales" class="btn btn-primary mt-2">{{ _('Export Sales Report') }}</button>
     </div>
     <div class="col-md-6 mb-4">
-        <h2>Labor Report</h2>
+        <h2>{{ _('Labor Efficiency') }}</h2>
         <canvas id="labor-chart"></canvas>
         <div id="labor-details" class="mt-3"></div>
+        <button id="export-labor" class="btn btn-primary mt-2">{{ _('Export Labor Report') }}</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>{{ _('Key Performance Indicators (KPIs)') }}</h2>
+        <div id="kpi-dashboard" class="row"></div>
+        <a href="{{ url_for('export_kpi_report') }}" class="btn btn-primary mt-3">{{ _('Export KPI Report') }}</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>{{ _('Forecast and Predictions') }}</h2>
+        <canvas id="forecast-chart"></canvas>
+        <div id="forecast-details" class="mt-3"></div>
     </div>
 </div>
 

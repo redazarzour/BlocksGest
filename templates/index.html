@@ -1,44 +1,44 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}{{ _('Home') }}{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Welcome to BlocksManage</h1>
-<p class="lead">Manage your concrete block manufacturing process efficiently with BlocksManage.</p>
+<h1 class="mb-4">{{ _('Welcome to BlocksManage') }}</h1>
+<p class="lead">{{ _('Manage your concrete block manufacturing process efficiently with BlocksManage.') }}</p>
 <div class="row">
     <div class="col-md-3 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Inventory</h5>
-                <p class="card-text">Manage raw materials, finished goods, and work-in-progress inventory.</p>
-                <a href="{{ url_for('inventory') }}" class="btn btn-primary">Go to Inventory</a>
+                <h5 class="card-title">{{ _('Inventory') }}</h5>
+                <p class="card-text">{{ _('Manage raw materials, finished goods, and work-in-progress inventory.') }}</p>
+                <a href="{{ url_for('inventory') }}" class="btn btn-primary">{{ _('Go to Inventory') }}</a>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Production</h5>
-                <p class="card-text">Create and manage production schedules for concrete blocks.</p>
-                <a href="{{ url_for('production') }}" class="btn btn-primary">Go to Production</a>
+                <h5 class="card-title">{{ _('Production') }}</h5>
+                <p class="card-text">{{ _('Create and manage production schedules for concrete blocks.') }}</p>
+                <a href="{{ url_for('production') }}" class="btn btn-primary">{{ _('Go to Production') }}</a>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Sales</h5>
-                <p class="card-text">Process sales transactions and manage customer orders.</p>
-                <a href="{{ url_for('sales') }}" class="btn btn-primary">Go to Sales</a>
+                <h5 class="card-title">{{ _('Sales') }}</h5>
+                <p class="card-text">{{ _('Process sales transactions and manage customer orders.') }}</p>
+                <a href="{{ url_for('sales') }}" class="btn btn-primary">{{ _('Go to Sales') }}</a>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Reports</h5>
-                <p class="card-text">View production and inventory reports for better decision-making.</p>
-                <a href="{{ url_for('reports') }}" class="btn btn-primary">Go to Reports</a>
+                <h5 class="card-title">{{ _('Reports') }}</h5>
+                <p class="card-text">{{ _('View production and inventory reports for better decision-making.') }}</p>
+                <a href="{{ url_for('reports') }}" class="btn btn-primary">{{ _('Go to Reports') }}</a>
             </div>
         </div>
     </div>

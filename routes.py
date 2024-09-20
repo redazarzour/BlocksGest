@@ -1,9 +1,14 @@
-from flask import render_template, request, jsonify, redirect, url_for
-from main import app, db
+from flask import render_template, request, jsonify, redirect, url_for, session, send_file
+from flask_babel import _
+from main import app, db, babel
 from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift
 from utils import update_inventory, create_production_schedule, process_sale
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import func
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
+import io
+import csv
 
 @app.route('/')
 def index():
@@ -96,8 +101,21 @@ def production_report():
 
 @app.route('/api/reports/sales', methods=['GET'])
 def sales_report():
-    transactions = SalesTransaction.query.order_by(SalesTransaction.transaction_date).all()
-    return jsonify([{'product_name': t.product_name, 'quantity': t.quantity, 'total_amount': t.total_amount, 'transaction_date': t.transaction_date.isoformat()} for t in transactions])
+    days = request.args.get('days', default=30, type=int)
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+    
+    transactions = SalesTransaction.query.filter(
+        SalesTransaction.transaction_date >= start_date,
+        SalesTransaction.transaction_date <= end_date
+    ).order_by(SalesTransaction.transaction_date).all()
+    
+    return jsonify([{
+        'product_name': t.product_name,
+        'quantity': t.quantity,
+        'total_amount': t.total_amount,
+        'transaction_date': t.transaction_date.isoformat()
+    } for t in transactions])
 
 @app.route('/labor')
 def labor():
@@ -163,3 +181,179 @@ def labor_report():
             'total_hours': float(total_hours)
         })
     return jsonify(worker_data)
+
+@app.route('/set_language/<lang>')
+def set_language(lang):
+    if lang in ['ar', 'fr', 'en']:
+        session['language'] = lang
+    return redirect(request.referrer or url_for('index'))
+
+@app.route('/api/reports/kpi', methods=['GET'])
+def kpi_report():
+    total_sales = db.session.query(func.sum(SalesTransaction.total_amount)).scalar() or 0
+    total_production = db.session.query(func.sum(ProductionSchedule.quantity)).scalar() or 0
+    inventory_value = db.session.query(func.sum(RawMaterial.quantity * RawMaterial.unit_price)).scalar() or 0
+    labor_cost = db.session.query(func.sum(Worker.hourly_rate * Shift.hours_worked)).join(Shift).scalar() or 0
+
+    return jsonify({
+        'total_sales': float(total_sales),
+        'total_production': int(total_production),
+        'inventory_value': float(inventory_value),
+        'labor_cost': float(labor_cost),
+        'gross_profit': float(total_sales - inventory_value - labor_cost)
+    })
+
+@app.route('/api/reports/forecast', methods=['GET'])
+def forecast_report():
+    sales_data = SalesTransaction.query.with_entities(
+        SalesTransaction.transaction_date, 
+        func.sum(SalesTransaction.total_amount)
+    ).group_by(SalesTransaction.transaction_date).order_by(SalesTransaction.transaction_date).all()
+
+    df = pd.DataFrame(sales_data, columns=['date', 'sales'])
+    df['date'] = pd.to_datetime(df['date'])
+    df.set_index('date', inplace=True)
+
+    if len(df) < 3:
+        return jsonify({
+            'dates': [],
+            'forecast': [],
+            'error': 'Not enough data for forecasting'
+        })
+
+    try:
+        model = ARIMA(df['sales'].astype(float), order=(1, 1, 1))
+        results = model.fit()
+
+        last_date = df.index[-1]
+        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=30)
+
+        forecast = results.forecast(steps=30)
+
+        return jsonify({
+            'dates': [date.strftime('%Y-%m-%d') for date in future_dates],
+            'forecast': forecast.tolist()
+        })
+    except Exception as e:
+        return jsonify({
+            'dates': [],
+            'forecast': [],
+            'error': str(e)
+        })
+
+@app.route('/api/reports/kpi/export', methods=['GET'])
+def export_kpi_report():
+    kpi_data = kpi_report().json
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(['Metric', 'Value'])
+    for key, value in kpi_data.items():
+        writer.writerow([key.replace('_', ' ').title(), value])
+
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        attachment_filename='kpi_report.csv'
+    )
+
+@app.route('/api/reports/inventory/export', methods=['GET'])
+def export_inventory_report():
+    raw_materials = RawMaterial.query.all()
+    finished_goods = FinishedGood.query.all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(['Type', 'Name', 'Quantity', 'Unit'])
+    for rm in raw_materials:
+        writer.writerow(['Raw Material', rm.name, rm.quantity, rm.unit])
+    for fg in finished_goods:
+        writer.writerow(['Finished Good', fg.name, fg.quantity, 'units'])
+
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        attachment_filename='inventory_report.csv'
+    )
+
+@app.route('/api/reports/production/export', methods=['GET'])
+def export_production_report():
+    schedules = ProductionSchedule.query.order_by(ProductionSchedule.scheduled_date).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(['Product Name', 'Quantity', 'Scheduled Date'])
+    for schedule in schedules:
+        writer.writerow([schedule.product_name, schedule.quantity, schedule.scheduled_date])
+
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        attachment_filename='production_report.csv'
+    )
+
+@app.route('/api/reports/sales/export', methods=['GET'])
+def export_sales_report():
+    days = request.args.get('days', default=30, type=int)
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+    
+    transactions = SalesTransaction.query.filter(
+        SalesTransaction.transaction_date >= start_date,
+        SalesTransaction.transaction_date <= end_date
+    ).order_by(SalesTransaction.transaction_date).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(['Product Name', 'Quantity', 'Total Amount', 'Transaction Date'])
+    for transaction in transactions:
+        writer.writerow([
+            transaction.product_name,
+            transaction.quantity,
+            transaction.total_amount,
+            transaction.transaction_date
+        ])
+
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        attachment_filename='sales_report.csv'
+    )
+
+@app.route('/api/reports/labor/export', methods=['GET'])
+def export_labor_report():
+    workers = Worker.query.all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(['Name', 'Position', 'Hire Date', 'Hourly Rate', 'Total Hours'])
+    for worker in workers:
+        total_hours = db.session.query(func.sum(Shift.hours_worked)).filter(Shift.worker_id == worker.id).scalar() or 0
+        writer.writerow([
+            worker.name,
+            worker.position,
+            worker.hire_date,
+            worker.hourly_rate,
+            float(total_hours)
+        ])
+
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        attachment_filename='labor_report.csv'
+    )

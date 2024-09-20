@@ -3,11 +3,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const productionChart = document.getElementById('production-chart').getContext('2d');
     const salesChart = document.getElementById('sales-chart').getContext('2d');
     const laborChart = document.getElementById('labor-chart').getContext('2d');
+    const forecastChart = document.getElementById('forecast-chart').getContext('2d');
 
     fetchInventoryData();
     fetchProductionData();
     fetchSalesData();
     fetchLaborData();
+    fetchKPIData();
+    fetchForecastData();
+
+    document.getElementById('sales-date-range').addEventListener('change', (event) => {
+        fetchSalesData(event.target.value);
+    });
+
+    // Add event listeners for export buttons
+    document.getElementById('export-inventory').addEventListener('click', exportInventory);
+    document.getElementById('export-production').addEventListener('click', exportProduction);
+    document.getElementById('export-sales').addEventListener('click', exportSales);
+    document.getElementById('export-labor').addEventListener('click', exportLabor);
 
     async function fetchInventoryData() {
         try {
@@ -40,7 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantity'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Inventory Levels'
                         }
                     }
                 }
@@ -85,10 +108,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             type: 'time',
                             time: {
                                 unit: 'day'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
                             }
                         },
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantity'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Production Trends'
                         }
                     }
                 }
@@ -106,9 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function fetchSalesData() {
+    async function fetchSalesData(days = 30) {
         try {
-            const response = await fetch('/api/reports/sales');
+            const response = await fetch(`/api/reports/sales?days=${days}`);
             const data = await response.json();
             
             const products = data.map(item => item.product_name);
@@ -132,10 +169,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             type: 'time',
                             time: {
                                 unit: 'day'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
                             }
                         },
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Amount ($)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sales Performance'
                         }
                     }
                 }
@@ -175,7 +226,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Hours'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Worker'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Labor Efficiency'
                         }
                     }
                 }
@@ -190,6 +257,187 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         } catch (error) {
             console.error('Error fetching labor data:', error);
+        }
+    }
+
+    async function fetchKPIData() {
+        try {
+            const response = await fetch('/api/reports/kpi');
+            const data = await response.json();
+
+            const kpiDashboard = document.getElementById('kpi-dashboard');
+            kpiDashboard.innerHTML = `
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Sales</h5>
+                            <p class="card-text">$${data.total_sales.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Production</h5>
+                            <p class="card-text">${data.total_production}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Inventory Value</h5>
+                            <p class="card-text">$${data.inventory_value.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">Labor Cost</h5>
+                            <p class="card-text">$${data.labor_cost.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Gross Profit</h5>
+                            <p class="card-text">$${data.gross_profit.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error fetching KPI data:', error);
+        }
+    }
+
+    async function fetchForecastData() {
+        try {
+            const response = await fetch('/api/reports/forecast');
+            const data = await response.json();
+
+            new Chart(forecastChart, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: 'Sales Forecast',
+                        data: data.forecast,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Forecasted Sales ($)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sales Forecast (Next 30 Days)'
+                        }
+                    }
+                }
+            });
+
+            const forecastDetails = document.getElementById('forecast-details');
+            const averageForecast = data.forecast.reduce((a, b) => a + b, 0) / data.forecast.length;
+            forecastDetails.innerHTML = `
+                <h4>Forecast Summary</h4>
+                <p>Average Forecasted Daily Sales: $${averageForecast.toFixed(2)}</p>
+                <p>Total Forecasted Sales (30 days): $${data.forecast.reduce((a, b) => a + b, 0).toFixed(2)}</p>
+            `;
+        } catch (error) {
+            console.error('Error fetching forecast data:', error);
+        }
+    }
+
+    // Export functions
+    async function exportInventory() {
+        try {
+            const response = await fetch('/api/reports/inventory/export');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'inventory_report.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting inventory data:', error);
+        }
+    }
+
+    async function exportProduction() {
+        try {
+            const response = await fetch('/api/reports/production/export');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'production_report.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting production data:', error);
+        }
+    }
+
+    async function exportSales() {
+        try {
+            const days = document.getElementById('sales-date-range').value;
+            const response = await fetch(`/api/reports/sales/export?days=${days}`);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'sales_report.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting sales data:', error);
+        }
+    }
+
+    async function exportLabor() {
+        try {
+            const response = await fetch('/api/reports/labor/export');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'labor_report.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting labor data:', error);
         }
     }
 });

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ get_locale() or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlocksManage - {% block title %}{% endblock %}</title>
+    <title>{{ _('BlocksManage') }} - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     {% block extra_css %}{% endblock %}
@@ -12,8 +12,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="BlocksManage Logo" width="30" height="30" class="d-inline-block align-top">
-                BlocksManage
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="{{ _('BlocksManage Logo') }}" width="30" height="30" class="d-inline-block align-top">
+                {{ _('BlocksManage') }}
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -21,19 +21,31 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('inventory') }}">Inventory</a>
+                        <a class="nav-link" href="{{ url_for('inventory') }}">{{ _('Inventory') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('production') }}">Production</a>
+                        <a class="nav-link" href="{{ url_for('production') }}">{{ _('Production') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('sales') }}">Sales</a>
+                        <a class="nav-link" href="{{ url_for('sales') }}">{{ _('Sales') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('labor') }}">Labor</a>
+                        <a class="nav-link" href="{{ url_for('labor') }}">{{ _('Labor') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('reports') }}">Reports</a>
+                        <a class="nav-link" href="{{ url_for('reports') }}">{{ _('Reports') }}</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ _('Language') }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                            <a class="dropdown-item" href="{{ url_for('set_language', lang='ar') }}">{{ _('Arabic') }}</a>
+                            <a class="dropdown-item" href="{{ url_for('set_language', lang='fr') }}">{{ _('French') }}</a>
+                            <a class="dropdown-item" href="{{ url_for('set_language', lang='en') }}">{{ _('English') }}</a>
+                        </div>
                     </li>
                 </ul>
             </div>
