@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, redirect, url_for, session, send_file
 from flask_babel import _
 from main import app, db, babel
-from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift
+from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift, Supplier, PurchaseOrder, PurchaseOrderItem
 from utils import update_inventory, create_production_schedule, process_sale
 from datetime import datetime, timedelta
 from sqlalchemy import func
@@ -357,3 +357,136 @@ def export_labor_report():
         as_attachment=True,
         attachment_filename='labor_report.csv'
     )
+
+@app.route('/suppliers')
+def suppliers():
+    suppliers = Supplier.query.all()
+    return render_template('suppliers.html', suppliers=suppliers)
+
+@app.route('/api/supplier/add', methods=['POST'])
+def add_supplier():
+    data = request.json
+    new_supplier = Supplier(
+        name=data['name'],
+        contact_person=data['contact_person'],
+        email=data['email'],
+        phone=data['phone'],
+        address=data['address']
+    )
+    db.session.add(new_supplier)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Supplier added successfully'})
+
+@app.route('/api/supplier/update', methods=['POST'])
+def update_supplier():
+    data = request.json
+    supplier = Supplier.query.get_or_404(data['supplier_id'])
+    supplier.name = data['name']
+    supplier.contact_person = data['contact_person']
+    supplier.email = data['email']
+    supplier.phone = data['phone']
+    supplier.address = data['address']
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Supplier updated successfully'})
+
+@app.route('/api/supplier/delete', methods=['POST'])
+def delete_supplier():
+    data = request.json
+    supplier = Supplier.query.get_or_404(data['supplier_id'])
+    db.session.delete(supplier)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Supplier deleted successfully'})
+
+@app.route('/purchase_orders')
+def purchase_orders():
+    purchase_orders = PurchaseOrder.query.all()
+    return render_template('purchase_orders.html', purchase_orders=purchase_orders)
+
+@app.route('/api/purchase_order/add', methods=['POST'])
+def add_purchase_order():
+    data = request.json
+    new_purchase_order = PurchaseOrder(
+        supplier_id=data['supplier_id'],
+        delivery_date=datetime.fromisoformat(data['delivery_date']),
+        total_amount=data['total_amount']
+    )
+    db.session.add(new_purchase_order)
+    db.session.commit()
+
+    for item in data['items']:
+        new_item = PurchaseOrderItem(
+            purchase_order_id=new_purchase_order.id,
+            raw_material_id=item['raw_material_id'],
+            quantity=item['quantity'],
+            unit_price=item['unit_price']
+        )
+        db.session.add(new_item)
+    
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Purchase order added successfully'})
+
+@app.route('/api/purchase_order/update', methods=['POST'])
+def update_purchase_order():
+    data = request.json
+    purchase_order = PurchaseOrder.query.get_or_404(data['purchase_order_id'])
+    purchase_order.supplier_id = data['supplier_id']
+    purchase_order.delivery_date = datetime.fromisoformat(data['delivery_date'])
+    purchase_order.status = data['status']
+    purchase_order.total_amount = data['total_amount']
+
+    # Remove existing items
+    for item in purchase_order.items:
+        db.session.delete(item)
+
+    # Add updated items
+    for item in data['items']:
+        new_item = PurchaseOrderItem(
+            purchase_order_id=purchase_order.id,
+            raw_material_id=item['raw_material_id'],
+            quantity=item['quantity'],
+            unit_price=item['unit_price']
+        )
+        db.session.add(new_item)
+
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Purchase order updated successfully'})
+
+@app.route('/api/purchase_order/delete', methods=['POST'])
+def delete_purchase_order():
+    data = request.json
+    purchase_order = PurchaseOrder.query.get_or_404(data['purchase_order_id'])
+    db.session.delete(purchase_order)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Purchase order deleted successfully'})
+
+@app.route('/api/reports/suppliers', methods=['GET'])
+def suppliers_report():
+    suppliers = Supplier.query.all()
+    supplier_data = []
+    for supplier in suppliers:
+        total_orders = PurchaseOrder.query.filter_by(supplier_id=supplier.id).count()
+        total_amount = db.session.query(func.sum(PurchaseOrder.total_amount)).filter_by(supplier_id=supplier.id).scalar() or 0
+        supplier_data.append({
+            'name': supplier.name,
+            'contact_person': supplier.contact_person,
+            'email': supplier.email,
+            'phone': supplier.phone,
+            'total_orders': total_orders,
+            'total_amount': float(total_amount)
+        })
+    return jsonify(supplier_data)
+
+@app.route('/api/reports/purchase_orders', methods=['GET'])
+def purchase_orders_report():
+    purchase_orders = PurchaseOrder.query.all()
+    po_data = []
+    for po in purchase_orders:
+        po_data.append({
+            'id': po.id,
+            'supplier_name': po.supplier.name,
+            'order_date': po.order_date.isoformat(),
+            'delivery_date': po.delivery_date.isoformat(),
+            'status': po.status,
+            'total_amount': float(po.total_amount)
+        })
+    return jsonify(po_data)

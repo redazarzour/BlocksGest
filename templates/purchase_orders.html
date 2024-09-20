@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Purchase Orders') }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ _('Purchase Order Management') }}</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{{ _('ID') }}</th>
+            <th>{{ _('Supplier') }}</th>
+            <th>{{ _('Order Date') }}</th>
+            <th>{{ _('Delivery Date') }}</th>
+            <th>{{ _('Status') }}</th>
+            <th>{{ _('Total Amount') }}</th>
+            <th>{{ _('Actions') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for po in purchase_orders %}
+        <tr>
+            <td>{{ po.id }}</td>
+            <td>{{ po.supplier.name }}</td>
+            <td>{{ po.order_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ po.delivery_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ po.status }}</td>
+            <td>${{ "%.2f"|format(po.total_amount) }}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-po" data-id="{{ po.id }}">{{ _('Edit') }}</button>
+                <button class="btn btn-sm btn-danger delete-po" data-id="{{ po.id }}">{{ _('Delete') }}</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>{{ _('Add New Purchase Order') }}</h2>
+<form id="add-po-form">
+    <div class="form-group">
+        <label for="supplier-id">{{ _('Supplier') }}</label>
+        <select class="form-control" id="supplier-id" required>
+            {% for supplier in suppliers %}
+            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="delivery-date">{{ _('Delivery Date') }}</label>
+        <input type="date" class="form-control" id="delivery-date" required>
+    </div>
+    <div id="po-items">
+        <h3>{{ _('Items') }}</h3>
+    </div>
+    <button type="button" class="btn btn-secondary" id="add-item">{{ _('Add Item') }}</button>
+    <button type="submit" class="btn btn-primary">{{ _('Create Purchase Order') }}</button>
+</form>
+
+<!-- Modal for editing purchase orders -->
+<div class="modal fade" id="editPOModal" tabindex="-1" role="dialog" aria-labelledby="editPOModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPOModalLabel">{{ _('Edit Purchase Order') }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-po-form">
+                    <input type="hidden" id="edit-po-id">
+                    <div class="form-group">
+                        <label for="edit-supplier-id">{{ _('Supplier') }}</label>
+                        <select class="form-control" id="edit-supplier-id" required>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-delivery-date">{{ _('Delivery Date') }}</label>
+                        <input type="date" class="form-control" id="edit-delivery-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-status">{{ _('Status') }}</label>
+                        <select class="form-control" id="edit-status" required>
+                            <option value="Pending">{{ _('Pending') }}</option>
+                            <option value="Shipped">{{ _('Shipped') }}</option>
+                            <option value="Delivered">{{ _('Delivered') }}</option>
+                        </select>
+                    </div>
+                    <div id="edit-po-items">
+                        <h3>{{ _('Items') }}</h3>
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="edit-add-item">{{ _('Add Item') }}</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
+                <button type="button" class="btn btn-primary" id="save-po-changes">{{ _('Save changes') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let itemCounter = 0;
+
+    function addItemField(container, prefix) {
+        const itemHtml = `
+            <div class="item-row">
+                <div class="form-group">
+                    <label for="${prefix}-raw-material-${itemCounter}">{{ _('Raw Material') }}</label>
+                    <select class="form-control" id="${prefix}-raw-material-${itemCounter}" required>
+                        {% for rm in raw_materials %}
+                        <option value="{{ rm.id }}">{{ rm.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="${prefix}-quantity-${itemCounter}">{{ _('Quantity') }}</label>
+                    <input type="number" class="form-control" id="${prefix}-quantity-${itemCounter}" required>
+                </div>
+                <div class="form-group">
+                    <label for="${prefix}-unit-price-${itemCounter}">{{ _('Unit Price') }}</label>
+                    <input type="number" step="0.01" class="form-control" id="${prefix}-unit-price-${itemCounter}" required>
+                </div>
+                <button type="button" class="btn btn-danger remove-item">{{ _('Remove') }}</button>
+            </div>
+        `;
+        $(container).append(itemHtml);
+        itemCounter++;
+    }
+
+    $('#add-item').click(function() {
+        addItemField('#po-items', 'po');
+    });
+
+    $('#edit-add-item').click(function() {
+        addItemField('#edit-po-items', 'edit-po');
+    });
+
+    $(document).on('click', '.remove-item', function() {
+        $(this).closest('.item-row').remove();
+    });
+
+    $('#add-po-form').submit(function(e) {
+        e.preventDefault();
+        const items = [];
+        $('.item-row').each(function() {
+            items.push({
+                raw_material_id: $(this).find('select').val(),
+                quantity: $(this).find('input[id^="po-quantity"]').val(),
+                unit_price: $(this).find('input[id^="po-unit-price"]').val()
+            });
+        });
+
+        const data = {
+            supplier_id: $('#supplier-id').val(),
+            delivery_date: $('#delivery-date').val(),
+            items: items
+        };
+
+        $.ajax({
+            url: '/api/purchase_order/add',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Purchase order added successfully');
+                    location.reload();
+                } else {
+                    alert('Error adding purchase order');
+                }
+            },
+            error: function() {
+                alert('Error adding purchase order');
+            }
+        });
+    });
+
+    $('.edit-po').click(function() {
+        const poId = $(this).data('id');
+        $.ajax({
+            url: `/api/purchase_order/${poId}`,
+            method: 'GET',
+            success: function(response) {
+                $('#edit-po-id').val(response.id);
+                $('#edit-supplier-id').val(response.supplier_id);
+                $('#edit-delivery-date').val(response.delivery_date);
+                $('#edit-status').val(response.status);
+                $('#edit-po-items').empty();
+                response.items.forEach(item => {
+                    addItemField('#edit-po-items', 'edit-po');
+                    const lastItem = $('#edit-po-items .item-row:last');
+                    lastItem.find('select').val(item.raw_material_id);
+                    lastItem.find('input[id^="edit-po-quantity"]').val(item.quantity);
+                    lastItem.find('input[id^="edit-po-unit-price"]').val(item.unit_price);
+                });
+                $('#editPOModal').modal('show');
+            },
+            error: function() {
+                alert('Error loading purchase order details');
+            }
+        });
+    });
+
+    $('#save-po-changes').click(function() {
+        const items = [];
+        $('#edit-po-items .item-row').each(function() {
+            items.push({
+                raw_material_id: $(this).find('select').val(),
+                quantity: $(this).find('input[id^="edit-po-quantity"]').val(),
+                unit_price: $(this).find('input[id^="edit-po-unit-price"]').val()
+            });
+        });
+
+        const data = {
+            purchase_order_id: $('#edit-po-id').val(),
+            supplier_id: $('#edit-supplier-id').val(),
+            delivery_date: $('#edit-delivery-date').val(),
+            status: $('#edit-status').val(),
+            items: items
+        };
+
+        $.ajax({
+            url: '/api/purchase_order/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Purchase order updated successfully');
+                    location.reload();
+                } else {
+                    alert('Error updating purchase order');
+                }
+            },
+            error: function() {
+                alert('Error updating purchase order');
+            }
+        });
+    });
+
+    $('.delete-po').click(function() {
+        if (confirm('Are you sure you want to delete this purchase order?')) {
+            const poId = $(this).data('id');
+            $.ajax({
+                url: '/api/purchase_order/delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ purchase_order_id: poId }),
+                success: function(response) {
+                    if (response.success) {
+                        alert('Purchase order deleted successfully');
+                        location.reload();
+                    } else {
+                        alert('Error deleting purchase order');
+                    }
+                },
+                error: function() {
+                    alert('Error deleting purchase order');
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

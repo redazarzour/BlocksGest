@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Suppliers') }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ _('Supplier Management') }}</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{{ _('Name') }}</th>
+            <th>{{ _('Contact Person') }}</th>
+            <th>{{ _('Email') }}</th>
+            <th>{{ _('Phone') }}</th>
+            <th>{{ _('Actions') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for supplier in suppliers %}
+        <tr>
+            <td>{{ supplier.name }}</td>
+            <td>{{ supplier.contact_person }}</td>
+            <td>{{ supplier.email }}</td>
+            <td>{{ supplier.phone }}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-supplier" data-id="{{ supplier.id }}" data-name="{{ supplier.name }}" data-contact="{{ supplier.contact_person }}" data-email="{{ supplier.email }}" data-phone="{{ supplier.phone }}" data-address="{{ supplier.address }}">{{ _('Edit') }}</button>
+                <button class="btn btn-sm btn-danger delete-supplier" data-id="{{ supplier.id }}">{{ _('Delete') }}</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>{{ _('Add New Supplier') }}</h2>
+<form id="add-supplier-form">
+    <div class="form-group">
+        <label for="supplier-name">{{ _('Name') }}</label>
+        <input type="text" class="form-control" id="supplier-name" required>
+    </div>
+    <div class="form-group">
+        <label for="supplier-contact">{{ _('Contact Person') }}</label>
+        <input type="text" class="form-control" id="supplier-contact" required>
+    </div>
+    <div class="form-group">
+        <label for="supplier-email">{{ _('Email') }}</label>
+        <input type="email" class="form-control" id="supplier-email" required>
+    </div>
+    <div class="form-group">
+        <label for="supplier-phone">{{ _('Phone') }}</label>
+        <input type="tel" class="form-control" id="supplier-phone" required>
+    </div>
+    <div class="form-group">
+        <label for="supplier-address">{{ _('Address') }}</label>
+        <textarea class="form-control" id="supplier-address" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ _('Add Supplier') }}</button>
+</form>
+
+<!-- Modal for editing suppliers -->
+<div class="modal fade" id="editSupplierModal" tabindex="-1" role="dialog" aria-labelledby="editSupplierModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSupplierModalLabel">{{ _('Edit Supplier') }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-supplier-form">
+                    <input type="hidden" id="edit-supplier-id">
+                    <div class="form-group">
+                        <label for="edit-supplier-name">{{ _('Name') }}</label>
+                        <input type="text" class="form-control" id="edit-supplier-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-supplier-contact">{{ _('Contact Person') }}</label>
+                        <input type="text" class="form-control" id="edit-supplier-contact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-supplier-email">{{ _('Email') }}</label>
+                        <input type="email" class="form-control" id="edit-supplier-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-supplier-phone">{{ _('Phone') }}</label>
+                        <input type="tel" class="form-control" id="edit-supplier-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-supplier-address">{{ _('Address') }}</label>
+                        <textarea class="form-control" id="edit-supplier-address" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
+                <button type="button" class="btn btn-primary" id="save-supplier-changes">{{ _('Save changes') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#add-supplier-form').submit(function(e) {
+        e.preventDefault();
+        var data = {
+            name: $('#supplier-name').val(),
+            contact_person: $('#supplier-contact').val(),
+            email: $('#supplier-email').val(),
+            phone: $('#supplier-phone').val(),
+            address: $('#supplier-address').val()
+        };
+
+        $.ajax({
+            url: '/api/supplier/add',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Supplier added successfully');
+                    location.reload();
+                } else {
+                    alert('Error adding supplier');
+                }
+            },
+            error: function() {
+                alert('Error adding supplier');
+            }
+        });
+    });
+
+    $('.edit-supplier').click(function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var contact = $(this).data('contact');
+        var email = $(this).data('email');
+        var phone = $(this).data('phone');
+        var address = $(this).data('address');
+
+        $('#edit-supplier-id').val(id);
+        $('#edit-supplier-name').val(name);
+        $('#edit-supplier-contact').val(contact);
+        $('#edit-supplier-email').val(email);
+        $('#edit-supplier-phone').val(phone);
+        $('#edit-supplier-address').val(address);
+
+        $('#editSupplierModal').modal('show');
+    });
+
+    $('#save-supplier-changes').click(function() {
+        var data = {
+            supplier_id: $('#edit-supplier-id').val(),
+            name: $('#edit-supplier-name').val(),
+            contact_person: $('#edit-supplier-contact').val(),
+            email: $('#edit-supplier-email').val(),
+            phone: $('#edit-supplier-phone').val(),
+            address: $('#edit-supplier-address').val()
+        };
+
+        $.ajax({
+            url: '/api/supplier/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Supplier updated successfully');
+                    location.reload();
+                } else {
+                    alert('Error updating supplier');
+                }
+            },
+            error: function() {
+                alert('Error updating supplier');
+            }
+        });
+    });
+
+    $('.delete-supplier').click(function() {
+        if (confirm('Are you sure you want to delete this supplier?')) {
+            var supplierId = $(this).data('id');
+
+            $.ajax({
+                url: '/api/supplier/delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ supplier_id: supplierId }),
+                success: function(response) {
+                    if (response.success) {
+                        alert('Supplier deleted successfully');
+                        location.reload();
+                    } else {
+                        alert('Error deleting supplier');
+                    }
+                },
+                error: function() {
+                    alert('Error deleting supplier');
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
