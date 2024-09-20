@@ -2,7 +2,7 @@ from main import db
 from models import RawMaterial
 
 def update_raw_materials():
-    raw_materials = RawMaterial.query.all()
+ssd*ù*ù    raw_materials = RawMaterial.query.all()
     for rm in raw_materials:
         if rm.unit_price is None:
             rm.unit_price = 0.0
