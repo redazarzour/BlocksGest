@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify, redirect, url_for
 from main import app, db
-from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment
+from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift
 from utils import update_inventory, create_production_schedule, process_sale
 from datetime import datetime
 
@@ -42,7 +42,6 @@ def process_sale_api():
     data = request.json
     result = process_sale(data['product_name'], data['quantity'], data['total_amount'])
     if result['success']:
-        # Create initial delivery and payment records
         new_transaction = SalesTransaction.query.order_by(SalesTransaction.id.desc()).first()
         delivery = Delivery(sales_transaction_id=new_transaction.id, quantity=data['quantity'])
         payment = Payment(sales_transaction_id=new_transaction.id, amount=data['total_amount'])
@@ -98,3 +97,66 @@ def production_report():
 def sales_report():
     transactions = SalesTransaction.query.all()
     return jsonify([{'product_name': t.product_name, 'quantity': t.quantity, 'total_amount': t.total_amount, 'transaction_date': t.transaction_date.isoformat()} for t in transactions])
+
+# New routes for labor management
+
+@app.route('/labor')
+def labor():
+    workers = Worker.query.all()
+    return render_template('labor.html', workers=workers)
+
+@app.route('/api/worker/add', methods=['POST'])
+def add_worker():
+    data = request.json
+    new_worker = Worker(
+        name=data['name'],
+        position=data['position'],
+        hire_date=datetime.strptime(data['hire_date'], '%Y-%m-%d').date(),
+        hourly_rate=float(data['hourly_rate'])
+    )
+    db.session.add(new_worker)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Worker added successfully'})
+
+@app.route('/api/worker/update', methods=['POST'])
+def update_worker():
+    data = request.json
+    worker = Worker.query.get_or_404(data['worker_id'])
+    worker.name = data['name']
+    worker.position = data['position']
+    worker.hire_date = datetime.strptime(data['hire_date'], '%Y-%m-%d').date()
+    worker.hourly_rate = float(data['hourly_rate'])
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Worker updated successfully'})
+
+@app.route('/api/worker/delete', methods=['POST'])
+def delete_worker():
+    data = request.json
+    worker = Worker.query.get_or_404(data['worker_id'])
+    db.session.delete(worker)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Worker deleted successfully'})
+
+@app.route('/api/shift/add', methods=['POST'])
+def add_shift():
+    data = request.json
+    new_shift = Shift(
+        worker_id=data['worker_id'],
+        start_time=datetime.fromisoformat(data['start_time']),
+        end_time=datetime.fromisoformat(data['end_time']),
+        hours_worked=float(data['hours_worked'])
+    )
+    db.session.add(new_shift)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Shift added successfully'})
+
+@app.route('/api/reports/labor', methods=['GET'])
+def labor_report():
+    workers = Worker.query.all()
+    return jsonify([{
+        'name': w.name,
+        'position': w.position,
+        'hire_date': w.hire_date.isoformat(),
+        'hourly_rate': w.hourly_rate,
+        'total_hours': sum(shift.hours_worked for shift in w.shifts)
+    } for w in workers])

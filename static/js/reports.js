@@ -2,10 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const inventoryChart = document.getElementById('inventory-chart').getContext('2d');
     const productionChart = document.getElementById('production-chart').getContext('2d');
     const salesChart = document.getElementById('sales-chart').getContext('2d');
+    const laborChart = document.getElementById('labor-chart').getContext('2d');
 
     fetchInventoryData();
     fetchProductionData();
     fetchSalesData();
+    fetchLaborData();
 
     async function fetchInventoryData() {
         try {
@@ -102,6 +104,38 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error('Error fetching sales data:', error);
+        }
+    }
+
+    async function fetchLaborData() {
+        try {
+            const response = await fetch('/api/reports/labor');
+            const data = await response.json();
+            
+            const workers = data.map(item => item.name);
+            const totalHours = data.map(item => item.total_hours);
+            
+            new Chart(laborChart, {
+                type: 'bar',
+                data: {
+                    labels: workers,
+                    datasets: [{
+                        label: 'Total Hours Worked',
+                        data: totalHours,
+                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching labor data:', error);
         }
     }
 });

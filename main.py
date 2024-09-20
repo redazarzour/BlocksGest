@@ -7,7 +7,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 
 from routes import *
-from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment
+from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift
 
 if __name__ == "__main__":
     with app.app_context():
