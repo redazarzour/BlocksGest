@@ -30,3 +30,19 @@ class SalesTransaction(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
     transaction_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    deliveries = db.relationship('Delivery', backref='sales_transaction', lazy=True)
+    payments = db.relationship('Payment', backref='sales_transaction', lazy=True)
+
+class Delivery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sales_transaction_id = db.Column(db.Integer, db.ForeignKey('sales_transaction.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    delivery_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    status = db.Column(db.String(20), nullable=False, default='Pending')
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sales_transaction_id = db.Column(db.Integer, db.ForeignKey('sales_transaction.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    payment_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    status = db.Column(db.String(20), nullable=False, default='Pending')

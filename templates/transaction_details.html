@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction Details{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Transaction Details</h1>
+
+<h2>Transaction Information</h2>
+<table class="table table-striped">
+    <tr>
+        <th>Product Name</th>
+        <td>{{ transaction.product_name }}</td>
+    </tr>
+    <tr>
+        <th>Quantity</th>
+        <td>{{ transaction.quantity }}</td>
+    </tr>
+    <tr>
+        <th>Total Amount</th>
+        <td>${{ "%.2f"|format(transaction.total_amount) }}</td>
+    </tr>
+    <tr>
+        <th>Transaction Date</th>
+        <td>{{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+    </tr>
+</table>
+
+<h2>Deliveries</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Quantity</th>
+            <th>Delivery Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for delivery in transaction.deliveries %}
+        <tr>
+            <td>{{ delivery.quantity }}</td>
+            <td>{{ delivery.delivery_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>{{ delivery.status }}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-delivery" data-id="{{ delivery.id }}" data-quantity="{{ delivery.quantity }}" data-date="{{ delivery.delivery_date.isoformat() }}" data-status="{{ delivery.status }}">Edit</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Payments</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Amount</th>
+            <th>Payment Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for payment in transaction.payments %}
+        <tr>
+            <td>${{ "%.2f"|format(payment.amount) }}</td>
+            <td>{{ payment.payment_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>{{ payment.status }}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-payment" data-id="{{ payment.id }}" data-amount="{{ payment.amount }}" data-date="{{ payment.payment_date.isoformat() }}" data-status="{{ payment.status }}">Edit</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal for editing deliveries -->
+<div class="modal fade" id="editDeliveryModal" tabindex="-1" role="dialog" aria-labelledby="editDeliveryModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDeliveryModalLabel">Edit Delivery</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editDeliveryForm">
+                    <input type="hidden" id="deliveryId">
+                    <div class="form-group">
+                        <label for="deliveryQuantity">Quantity</label>
+                        <input type="number" class="form-control" id="deliveryQuantity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deliveryDate">Delivery Date</label>
+                        <input type="datetime-local" class="form-control" id="deliveryDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deliveryStatus">Status</label>
+                        <select class="form-control" id="deliveryStatus" required>
+                            <option value="Pending">Pending</option>
+                            <option value="In Transit">In Transit</option>
+                            <option value="Delivered">Delivered</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveDeliveryChanges">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for editing payments -->
+<div class="modal fade" id="editPaymentModal" tabindex="-1" role="dialog" aria-labelledby="editPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPaymentModalLabel">Edit Payment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editPaymentForm">
+                    <input type="hidden" id="paymentId">
+                    <div class="form-group">
+                        <label for="paymentAmount">Amount</label>
+                        <input type="number" class="form-control" id="paymentAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentDate">Payment Date</label>
+                        <input type="datetime-local" class="form-control" id="paymentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentStatus">Status</label>
+                        <select class="form-control" id="paymentStatus" required>
+                            <option value="Pending">Pending</option>
+                            <option value="Processed">Processed</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="savePaymentChanges">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('.edit-delivery').click(function() {
+        var id = $(this).data('id');
+        var quantity = $(this).data('quantity');
+        var date = $(this).data('date');
+        var status = $(this).data('status');
+
+        $('#deliveryId').val(id);
+        $('#deliveryQuantity').val(quantity);
+        $('#deliveryDate').val(date);
+        $('#deliveryStatus').val(status);
+
+        $('#editDeliveryModal').modal('show');
+    });
+
+    $('.edit-payment').click(function() {
+        var id = $(this).data('id');
+        var amount = $(this).data('amount');
+        var date = $(this).data('date');
+        var status = $(this).data('status');
+
+        $('#paymentId').val(id);
+        $('#paymentAmount').val(amount);
+        $('#paymentDate').val(date);
+        $('#paymentStatus').val(status);
+
+        $('#editPaymentModal').modal('show');
+    });
+
+    $('#saveDeliveryChanges').click(function() {
+        var data = {
+            delivery_id: $('#deliveryId').val(),
+            quantity: $('#deliveryQuantity').val(),
+            delivery_date: $('#deliveryDate').val(),
+            status: $('#deliveryStatus').val()
+        };
+
+        $.ajax({
+            url: '/api/delivery/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Delivery updated successfully');
+                    location.reload();
+                } else {
+                    alert('Error updating delivery');
+                }
+            },
+            error: function() {
+                alert('Error updating delivery');
+            }
+        });
+    });
+
+    $('#savePaymentChanges').click(function() {
+        var data = {
+            payment_id: $('#paymentId').val(),
+            amount: $('#paymentAmount').val(),
+            payment_date: $('#paymentDate').val(),
+            status: $('#paymentStatus').val()
+        };
+
+        $.ajax({
+            url: '/api/payment/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Payment updated successfully');
+                    location.reload();
+                } else {
+                    alert('Error updating payment');
+                }
+            },
+            error: function() {
+                alert('Error updating payment');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

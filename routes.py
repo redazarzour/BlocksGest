@@ -1,7 +1,8 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect, url_for
 from main import app, db
-from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction
+from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment
 from utils import update_inventory, create_production_schedule, process_sale
+from datetime import datetime
 
 @app.route('/')
 def index():
@@ -40,7 +41,40 @@ def sales():
 def process_sale_api():
     data = request.json
     result = process_sale(data['product_name'], data['quantity'], data['total_amount'])
+    if result['success']:
+        # Create initial delivery and payment records
+        new_transaction = SalesTransaction.query.order_by(SalesTransaction.id.desc()).first()
+        delivery = Delivery(sales_transaction_id=new_transaction.id, quantity=data['quantity'])
+        payment = Payment(sales_transaction_id=new_transaction.id, amount=data['total_amount'])
+        db.session.add(delivery)
+        db.session.add(payment)
+        db.session.commit()
     return jsonify(result)
+
+@app.route('/transaction/<int:transaction_id>')
+def transaction_details(transaction_id):
+    transaction = SalesTransaction.query.get_or_404(transaction_id)
+    return render_template('transaction_details.html', transaction=transaction)
+
+@app.route('/api/delivery/update', methods=['POST'])
+def update_delivery():
+    data = request.json
+    delivery = Delivery.query.get_or_404(data['delivery_id'])
+    delivery.quantity = data['quantity']
+    delivery.delivery_date = datetime.fromisoformat(data['delivery_date'])
+    delivery.status = data['status']
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Delivery updated successfully'})
+
+@app.route('/api/payment/update', methods=['POST'])
+def update_payment():
+    data = request.json
+    payment = Payment.query.get_or_404(data['payment_id'])
+    payment.amount = data['amount']
+    payment.payment_date = datetime.fromisoformat(data['payment_date'])
+    payment.status = data['status']
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Payment updated successfully'})
 
 @app.route('/reports')
 def reports():

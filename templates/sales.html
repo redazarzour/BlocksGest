@@ -13,6 +13,7 @@
             <th>Quantity</th>
             <th>Total Amount</th>
             <th>Transaction Date</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -22,6 +23,9 @@
             <td>{{ transaction.quantity }}</td>
             <td>${{ "%.2f"|format(transaction.total_amount) }}</td>
             <td>{{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+                <a href="{{ url_for('transaction_details', transaction_id=transaction.id) }}" class="btn btn-sm btn-info">View Details</a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
