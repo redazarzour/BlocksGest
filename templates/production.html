@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Production{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Production Management</h1>
+
+<h2>Production Schedules</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Scheduled Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for schedule in schedules %}
+        <tr>
+            <td>{{ schedule.product_name }}</td>
+            <td>{{ schedule.quantity }}</td>
+            <td>{{ schedule.scheduled_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Create Production Schedule</h2>
+<form id="production-form">
+    <div class="form-group">
+        <label for="product-name">Product Name</label>
+        <input type="text" class="form-control" id="product-name" required>
+    </div>
+    <div class="form-group">
+        <label for="quantity">Quantity</label>
+        <input type="number" class="form-control" id="quantity" required>
+    </div>
+    <div class="form-group">
+        <label for="scheduled-date">Scheduled Date</label>
+        <input type="datetime-local" class="form-control" id="scheduled-date" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Schedule</button>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/production.js') }}"></script>
+{% endblock %}

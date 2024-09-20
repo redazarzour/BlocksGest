@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Inventory Management</h1>
+
+<h2>Raw Materials</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for material in raw_materials %}
+        <tr>
+            <td>{{ material.name }}</td>
+            <td>{{ material.quantity }}</td>
+            <td>{{ material.unit }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Finished Goods</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Quantity</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for good in finished_goods %}
+        <tr>
+            <td>{{ good.name }}</td>
+            <td>{{ good.quantity }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Work in Progress</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Start Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for wip in work_in_progress %}
+        <tr>
+            <td>{{ wip.product_name }}</td>
+            <td>{{ wip.quantity }}</td>
+            <td>{{ wip.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Update Inventory</h2>
+<form id="inventory-form">
+    <div class="form-group">
+        <label for="item-type">Item Type</label>
+        <select class="form-control" id="item-type" required>
+            <option value="raw_material">Raw Material</option>
+            <option value="finished_good">Finished Good</option>
+            <option value="work_in_progress">Work in Progress</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="item-id">Item ID</label>
+        <input type="number" class="form-control" id="item-id" required>
+    </div>
+    <div class="form-group">
+        <label for="quantity">New Quantity</label>
+        <input type="number" class="form-control" id="quantity" step="0.01" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Inventory</button>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+{% endblock %}

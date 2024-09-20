@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Sales{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Sales Management</h1>
+
+<h2>Sales Transactions</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Total Amount</th>
+            <th>Transaction Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for transaction in transactions %}
+        <tr>
+            <td>{{ transaction.product_name }}</td>
+            <td>{{ transaction.quantity }}</td>
+            <td>${{ "%.2f"|format(transaction.total_amount) }}</td>
+            <td>{{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Process Sale</h2>
+<form id="sales-form">
+    <div class="form-group">
+        <label for="product-name">Product Name</label>
+        <input type="text" class="form-control" id="product-name" required>
+    </div>
+    <div class="form-group">
+        <label for="quantity">Quantity</label>
+        <input type="number" class="form-control" id="quantity" required>
+    </div>
+    <div class="form-group">
+        <label for="total-amount">Total Amount</label>
+        <input type="number" class="form-control" id="total-amount" step="0.01" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Process Sale</button>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/sales.js') }}"></script>
+{% endblock %}

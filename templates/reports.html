@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Reports</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h2>Inventory Report</h2>
+        <canvas id="inventory-chart"></canvas>
+    </div>
+    <div class="col-md-6 mb-4">
+        <h2>Production Report</h2>
+        <canvas id="production-chart"></canvas>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h2>Sales Report</h2>
+        <canvas id="sales-chart"></canvas>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}
