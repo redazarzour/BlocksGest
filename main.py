@@ -1,12 +1,14 @@
-from flask import Flask, request, session
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_babel import Babel, get_locale
+from flask_migrate import Migrate  # Add this line
 from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 babel = Babel(app)
+migrate = Migrate(app, db)  # Add this line
 
 def get_locale():
     return request.accept_languages.best_match(['en', 'fr', 'ar']) or 'en'

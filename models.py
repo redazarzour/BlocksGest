@@ -6,6 +6,7 @@ class RawMaterial(db.Model):
     name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String(20), nullable=False)
+    unit_price = db.Column(db.Float, nullable=False, default=0.0)
 
 class FinishedGood(db.Model):
     id = db.Column(db.Integer, primary_key=True)
