@@ -27,6 +27,10 @@ args = "Update Raw Materials"
 task = "workflow.run"
 args = "Inspect Raw Material"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Check DB Config"
+
 [[workflows.workflow]]
 name = "Run BlocksManage"
 author = "agent"
@@ -71,6 +75,17 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python inspect_raw_material.py"
+
+[[workflows.workflow]]
+name = "Check DB Config"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python check_db_config.py"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
