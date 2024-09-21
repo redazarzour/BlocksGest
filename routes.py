@@ -190,18 +190,31 @@ def set_language(lang):
 
 @app.route('/api/reports/kpi', methods=['GET'])
 def kpi_report():
-    total_sales = db.session.query(func.sum(SalesTransaction.total_amount)).scalar() or 0
-    total_production = db.session.query(func.sum(ProductionSchedule.quantity)).scalar() or 0
-    inventory_value = db.session.query(func.sum(RawMaterial.quantity * RawMaterial.unit_price)).scalar() or 0
-    labor_cost = db.session.query(func.sum(Worker.hourly_rate * Shift.hours_worked)).join(Shift).scalar() or 0
+    try:
+        total_sales = db.session.query(func.sum(SalesTransaction.total_amount)).scalar() or 0
+        total_production = db.session.query(func.sum(ProductionSchedule.quantity)).scalar() or 0
+        
+        # Calculate inventory value with error handling
+        inventory_value = 0
+        raw_materials = RawMaterial.query.all()
+        for rm in raw_materials:
+            if hasattr(rm, 'unit_price'):
+                inventory_value += rm.quantity * rm.unit_price
+            else:
+                app.logger.warning(f"RawMaterial {rm.id} does not have 'unit_price' attribute")
+        
+        labor_cost = db.session.query(func.sum(Worker.hourly_rate * Shift.hours_worked)).join(Shift).scalar() or 0
 
-    return jsonify({
-        'total_sales': float(total_sales),
-        'total_production': int(total_production),
-        'inventory_value': float(inventory_value),
-        'labor_cost': float(labor_cost),
-        'gross_profit': float(total_sales - inventory_value - labor_cost)
-    })
+        return jsonify({
+            'total_sales': float(total_sales),
+            'total_production': int(total_production),
+            'inventory_value': float(inventory_value),
+            'labor_cost': float(labor_cost),
+            'gross_profit': float(total_sales - inventory_value - labor_cost)
+        })
+    except Exception as e:
+        app.logger.error(f"Error in KPI report: {str(e)}")
+        return jsonify({'error': 'An error occurred while generating the KPI report'}), 500
 
 @app.route('/api/reports/forecast', methods=['GET'])
 def forecast_report():

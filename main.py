@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_babel import Babel, get_locale
 from flask_migrate import Migrate
@@ -32,6 +32,6 @@ if __name__ == "__main__":
             logger.error(f"Error creating database tables: {str(e)}")
     
     try:
-        app.run(host="0.0.0.0", port=5001)
+        app.run(host="0.0.0.0", port=5000, debug=True)
     except Exception as e:
         logger.error(f"Error starting the application: {str(e)}")
