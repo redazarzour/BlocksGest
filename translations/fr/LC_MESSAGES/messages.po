@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-09-21 12:11+0000\n"
-"PO-Revision-Date: 2024-09-21 12:11+0000\n"
+"POT-Creation-Date: 2024-09-21 17:15+0000\n"
+"PO-Revision-Date: 2024-09-21 17:15+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -18,35 +18,3 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-msgid "Home"
-msgstr "Accueil"
-
-msgid "Inventory"
-msgstr "Inventaire"
-
-msgid "Production"
-msgstr "Production"
-
-msgid "Sales"
-msgstr "Ventes"
-
-msgid "Reports"
-msgstr "Rapports"
-
-msgid "Language"
-msgstr "Langue"
-
-msgid "Arabic"
-msgstr "Arabe"
-
-msgid "French"
-msgstr "Français"
-
-msgid "English"
-msgstr "Anglais"
-
-msgid "Welcome to BlocksManage"
-msgstr "Bienvenue sur BlocksManage"
-
-msgid "Manage your concrete block manufacturing process efficiently with BlocksManage."
-msgstr "Gérez efficacement votre processus de fabrication de blocs de béton avec BlocksManage."

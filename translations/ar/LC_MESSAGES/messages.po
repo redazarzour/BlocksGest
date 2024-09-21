@@ -7,46 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-09-21 12:11+0000\n"
-"PO-Revision-Date: 2024-09-21 12:11+0000\n"
+"POT-Creation-Date: 2024-09-21 17:15+0000\n"
+"PO-Revision-Date: 2024-09-21 17:15+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ar\n"
 "Language-Team: ar <LL@li.org>\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=0 && n%100<=2 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : "
+"n%100>=3 && n%100<=10 ? 3 : n%100>=0 && n%100<=2 ? 4 : 5);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-msgid "Home"
-msgstr "الصفحة الرئيسية"
-
-msgid "Inventory"
-msgstr "المخزون"
-
-msgid "Production"
-msgstr "الإنتاج"
-
-msgid "Sales"
-msgstr "المبيعات"
-
-msgid "Reports"
-msgstr "التقارير"
-
-msgid "Language"
-msgstr "اللغة"
-
-msgid "Arabic"
-msgstr "العربية"
-
-msgid "French"
-msgstr "الفرنسية"
-
-msgid "English"
-msgstr "الإنجليزية"
-
-msgid "Welcome to BlocksManage"
-msgstr "مرحبًا بكم في BlocksManage"
-
-msgid "Manage your concrete block manufacturing process efficiently with BlocksManage."
-msgstr "إدارة عملية تصنيع الكتل الخرسانية بكفاءة مع BlocksManage."
