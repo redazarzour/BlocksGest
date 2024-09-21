@@ -9,6 +9,7 @@ import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
 import io
 import csv
+import logging
 
 @app.route('/')
 def index():
@@ -184,8 +185,12 @@ def labor_report():
 
 @app.route('/set_language/<lang>')
 def set_language(lang):
+    app.logger.debug(f"Setting language to: {lang}")
     if lang in ['ar', 'fr', 'en']:
         session['language'] = lang
+        app.logger.debug(f"Language set in session: {session['language']}")
+    else:
+        app.logger.warning(f"Invalid language requested: {lang}")
     return redirect(request.referrer or url_for('index'))
 
 @app.route('/api/reports/kpi', methods=['GET'])
@@ -194,7 +199,6 @@ def kpi_report():
         total_sales = db.session.query(func.sum(SalesTransaction.total_amount)).scalar() or 0
         total_production = db.session.query(func.sum(ProductionSchedule.quantity)).scalar() or 0
         
-        # Calculate inventory value with error handling
         inventory_value = 0
         raw_materials = RawMaterial.query.all()
         for rm in raw_materials:
@@ -447,11 +451,9 @@ def update_purchase_order():
     purchase_order.status = data['status']
     purchase_order.total_amount = data['total_amount']
 
-    # Remove existing items
     for item in purchase_order.items:
         db.session.delete(item)
 
-    # Add updated items
     for item in data['items']:
         new_item = PurchaseOrderItem(
             purchase_order_id=purchase_order.id,

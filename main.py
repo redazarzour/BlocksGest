@@ -15,7 +15,11 @@ babel = Babel(app)
 migrate = Migrate(app, db)
 
 def get_locale():
-    return request.accept_languages.best_match(['en', 'fr', 'ar']) or 'en'
+    logger.debug(f"Request headers: {request.headers}")
+    logger.debug(f"Accept languages: {request.accept_languages}")
+    selected_lang = request.accept_languages.best_match(['en', 'fr', 'ar']) or 'en'
+    logger.debug(f"Selected language: {selected_lang}")
+    return selected_lang
 
 babel.init_app(app, locale_selector=get_locale)
 app.jinja_env.globals.update(get_locale=get_locale)
