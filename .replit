@@ -43,6 +43,22 @@ args = "Create Migration"
 task = "workflow.run"
 args = "Apply Migration"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Create Translation Directories"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Extract Translations"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Initialize Translations"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Compile Translations"
+
 [[workflows.workflow]]
 name = "Run BlocksManage"
 author = "agent"
@@ -131,6 +147,50 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "export FLASK_APP=main.py && flask db upgrade"
+
+[[workflows.workflow]]
+name = "Create Translation Directories"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "mkdir -p translations/ar/LC_MESSAGES translations/fr/LC_MESSAGES"
+
+[[workflows.workflow]]
+name = "Extract Translations"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pybabel extract -F babel.cfg -o messages.pot ."
+
+[[workflows.workflow]]
+name = "Initialize Translations"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pybabel init -i messages.pot -d translations -l ar && pybabel init -i messages.pot -d translations -l fr"
+
+[[workflows.workflow]]
+name = "Compile Translations"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pybabel compile -d translations"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
