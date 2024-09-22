@@ -1,23 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Production{% endblock %}
+{% block title %}{{ _('Production') }}{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Production Management</h1>
+<h1 class="mb-4">{{ _('Production Management') }}</h1>
 
-<h2>Production Schedules</h2>
+<h2>{{ _('Production Schedules') }}</h2>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Product Name</th>
-            <th>Quantity</th>
-            <th>Scheduled Date</th>
+            <th>{{ _('Product Name') }}</th>
+            <th>{{ _('Block Type') }}</th>
+            <th>{{ _('Quantity') }}</th>
+            <th>{{ _('Scheduled Date') }}</th>
         </tr>
     </thead>
     <tbody>
         {% for schedule in schedules %}
         <tr>
             <td>{{ schedule.product_name }}</td>
+            <td>{{ schedule.block_type }}</td>
             <td>{{ schedule.quantity }}</td>
             <td>{{ schedule.scheduled_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
         </tr>
@@ -25,21 +27,30 @@
     </tbody>
 </table>
 
-<h2>Create Production Schedule</h2>
+<h2>{{ _('Create Production Schedule') }}</h2>
 <form id="production-form">
     <div class="form-group">
-        <label for="product-name">Product Name</label>
+        <label for="product-name">{{ _('Product Name') }}</label>
         <input type="text" class="form-control" id="product-name" required>
     </div>
     <div class="form-group">
-        <label for="quantity">Quantity</label>
+        <label for="block-type">{{ _('Block Type') }}</label>
+        <select class="form-control" id="block-type" required>
+            <option value="Standard">{{ _('Standard') }}</option>
+            <option value="Hollow">{{ _('Hollow') }}</option>
+            <option value="Interlocking">{{ _('Interlocking') }}</option>
+            <option value="Paving">{{ _('Paving') }}</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="quantity">{{ _('Quantity') }}</label>
         <input type="number" class="form-control" id="quantity" required>
     </div>
     <div class="form-group">
-        <label for="scheduled-date">Scheduled Date</label>
+        <label for="scheduled-date">{{ _('Scheduled Date') }}</label>
         <input type="datetime-local" class="form-control" id="scheduled-date" required>
     </div>
-    <button type="submit" class="btn btn-primary">Create Schedule</button>
+    <button type="submit" class="btn btn-primary">{{ _('Create Schedule') }}</button>
 </form>
 
 {% endblock %}

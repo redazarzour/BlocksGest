@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         
         const productName = document.getElementById('product-name').value;
+        const blockType = document.getElementById('block-type').value;
         const quantity = document.getElementById('quantity').value;
         const scheduledDate = document.getElementById('scheduled-date').value;
         
@@ -14,7 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ product_name: productName, quantity: parseInt(quantity), scheduled_date: scheduledDate }),
+                body: JSON.stringify({
+                    product_name: productName,
+                    block_type: blockType,
+                    quantity: parseInt(quantity),
+                    scheduled_date: scheduledDate
+                }),
             });
             
             const result = await response.json();

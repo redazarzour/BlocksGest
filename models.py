@@ -12,18 +12,21 @@ class FinishedGood(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    block_type = db.Column(db.String(50), nullable=False)
 
 class WorkInProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    block_type = db.Column(db.String(50), nullable=False)
 
 class ProductionSchedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     scheduled_date = db.Column(db.DateTime, nullable=False)
+    block_type = db.Column(db.String(50), nullable=False)
 
 class SalesTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)

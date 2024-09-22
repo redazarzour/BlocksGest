@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Inventory{% endblock %}
+{% block title %}{{ _('Inventory') }}{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Inventory Management</h1>
+<h1 class="mb-4">{{ _('Inventory Management') }}</h1>
 
-<h2>Raw Materials</h2>
+<h2>{{ _('Raw Materials') }}</h2>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Quantity</th>
-            <th>Unit</th>
+            <th>{{ _('Name') }}</th>
+            <th>{{ _('Quantity') }}</th>
+            <th>{{ _('Unit') }}</th>
+            <th>{{ _('Unit Price') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -20,42 +21,47 @@
             <td>{{ material.name }}</td>
             <td>{{ material.quantity }}</td>
             <td>{{ material.unit }}</td>
+            <td>${{ "%.2f"|format(material.unit_price) }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<h2>Finished Goods</h2>
+<h2>{{ _('Finished Goods') }}</h2>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Quantity</th>
+            <th>{{ _('Name') }}</th>
+            <th>{{ _('Block Type') }}</th>
+            <th>{{ _('Quantity') }}</th>
         </tr>
     </thead>
     <tbody>
         {% for good in finished_goods %}
         <tr>
             <td>{{ good.name }}</td>
+            <td>{{ good.block_type }}</td>
             <td>{{ good.quantity }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<h2>Work in Progress</h2>
+<h2>{{ _('Work in Progress') }}</h2>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Product Name</th>
-            <th>Quantity</th>
-            <th>Start Date</th>
+            <th>{{ _('Product Name') }}</th>
+            <th>{{ _('Block Type') }}</th>
+            <th>{{ _('Quantity') }}</th>
+            <th>{{ _('Start Date') }}</th>
         </tr>
     </thead>
     <tbody>
         {% for wip in work_in_progress %}
         <tr>
             <td>{{ wip.product_name }}</td>
+            <td>{{ wip.block_type }}</td>
             <td>{{ wip.quantity }}</td>
             <td>{{ wip.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
         </tr>
@@ -63,25 +69,25 @@
     </tbody>
 </table>
 
-<h2>Update Inventory</h2>
+<h2>{{ _('Update Inventory') }}</h2>
 <form id="inventory-form">
     <div class="form-group">
-        <label for="item-type">Item Type</label>
+        <label for="item-type">{{ _('Item Type') }}</label>
         <select class="form-control" id="item-type" required>
-            <option value="raw_material">Raw Material</option>
-            <option value="finished_good">Finished Good</option>
-            <option value="work_in_progress">Work in Progress</option>
+            <option value="raw_material">{{ _('Raw Material') }}</option>
+            <option value="finished_good">{{ _('Finished Good') }}</option>
+            <option value="work_in_progress">{{ _('Work in Progress') }}</option>
         </select>
     </div>
     <div class="form-group">
-        <label for="item-id">Item ID</label>
+        <label for="item-id">{{ _('Item ID') }}</label>
         <input type="number" class="form-control" id="item-id" required>
     </div>
     <div class="form-group">
-        <label for="quantity">New Quantity</label>
+        <label for="quantity">{{ _('New Quantity') }}</label>
         <input type="number" class="form-control" id="quantity" step="0.01" required>
     </div>
-    <button type="submit" class="btn btn-primary">Update Inventory</button>
+    <button type="submit" class="btn btn-primary">{{ _('Update Inventory') }}</button>
 </form>
 
 {% endblock %}

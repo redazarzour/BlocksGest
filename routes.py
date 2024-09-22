@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify, redirect, url_for, session,
 from flask_babel import _
 from main import app, db, babel
 from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift, Supplier, PurchaseOrder, PurchaseOrderItem, QualityCheck
-from utils import update_inventory, create_production_schedule, process_sale
+from utils import update_inventory, process_sale
 from datetime import datetime, timedelta
 from sqlalchemy import func
 import pandas as pd
@@ -36,8 +36,15 @@ def production():
 @app.route('/api/production/schedule', methods=['POST'])
 def create_production_schedule_api():
     data = request.json
-    result = create_production_schedule(data['product_name'], data['quantity'], data['scheduled_date'])
-    return jsonify(result)
+    new_schedule = ProductionSchedule(
+        product_name=data['product_name'],
+        block_type=data['block_type'],
+        quantity=data['quantity'],
+        scheduled_date=datetime.fromisoformat(data['scheduled_date'])
+    )
+    db.session.add(new_schedule)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Production schedule created successfully'})
 
 @app.route('/sales')
 def sales():
