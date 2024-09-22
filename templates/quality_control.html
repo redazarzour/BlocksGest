@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Quality Control') }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ _('Quality Control') }}</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{{ _('Product Name') }}</th>
+            <th>{{ _('Batch Number') }}</th>
+            <th>{{ _('Check Date') }}</th>
+            <th>{{ _('Inspector') }}</th>
+            <th>{{ _('Passed') }}</th>
+            <th>{{ _('Notes') }}</th>
+            <th>{{ _('Actions') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for check in checks %}
+        <tr>
+            <td>{{ check.product_name }}</td>
+            <td>{{ check.batch_number }}</td>
+            <td>{{ check.check_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>{{ check.inspector_name }}</td>
+            <td>{{ _('Yes') if check.passed else _('No') }}</td>
+            <td>{{ check.notes }}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-check" data-id="{{ check.id }}">{{ _('Edit') }}</button>
+                <button class="btn btn-sm btn-danger delete-check" data-id="{{ check.id }}">{{ _('Delete') }}</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>{{ _('Add New Quality Check') }}</h2>
+<form id="add-check-form">
+    <div class="form-group">
+        <label for="product-name">{{ _('Product Name') }}</label>
+        <input type="text" class="form-control" id="product-name" required>
+    </div>
+    <div class="form-group">
+        <label for="batch-number">{{ _('Batch Number') }}</label>
+        <input type="text" class="form-control" id="batch-number" required>
+    </div>
+    <div class="form-group">
+        <label for="inspector-name">{{ _('Inspector Name') }}</label>
+        <input type="text" class="form-control" id="inspector-name" required>
+    </div>
+    <div class="form-group">
+        <label for="passed">{{ _('Passed') }}</label>
+        <select class="form-control" id="passed" required>
+            <option value="true">{{ _('Yes') }}</option>
+            <option value="false">{{ _('No') }}</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="notes">{{ _('Notes') }}</label>
+        <textarea class="form-control" id="notes"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ _('Add Quality Check') }}</button>
+</form>
+
+<!-- Modal for editing quality checks -->
+<div class="modal fade" id="editCheckModal" tabindex="-1" role="dialog" aria-labelledby="editCheckModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCheckModalLabel">{{ _('Edit Quality Check') }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-check-form">
+                    <input type="hidden" id="edit-check-id">
+                    <div class="form-group">
+                        <label for="edit-product-name">{{ _('Product Name') }}</label>
+                        <input type="text" class="form-control" id="edit-product-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-batch-number">{{ _('Batch Number') }}</label>
+                        <input type="text" class="form-control" id="edit-batch-number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-inspector-name">{{ _('Inspector Name') }}</label>
+                        <input type="text" class="form-control" id="edit-inspector-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-passed">{{ _('Passed') }}</label>
+                        <select class="form-control" id="edit-passed" required>
+                            <option value="true">{{ _('Yes') }}</option>
+                            <option value="false">{{ _('No') }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-notes">{{ _('Notes') }}</label>
+                        <textarea class="form-control" id="edit-notes"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Close') }}</button>
+                <button type="button" class="btn btn-primary" id="save-check-changes">{{ _('Save changes') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#add-check-form').submit(function(e) {
+        e.preventDefault();
+        var data = {
+            product_name: $('#product-name').val(),
+            batch_number: $('#batch-number').val(),
+            inspector_name: $('#inspector-name').val(),
+            passed: $('#passed').val() === 'true',
+            notes: $('#notes').val()
+        };
+
+        $.ajax({
+            url: '/api/quality_check/add',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Quality check added successfully');
+                    location.reload();
+                } else {
+                    alert('Error adding quality check');
+                }
+            },
+            error: function() {
+                alert('Error adding quality check');
+            }
+        });
+    });
+
+    $('.edit-check').click(function() {
+        var checkId = $(this).data('id');
+        // Fetch the check data and populate the modal
+        // This is a simplified version, you might want to add an API endpoint to fetch the check data
+        $('#edit-check-id').val(checkId);
+        $('#editCheckModal').modal('show');
+    });
+
+    $('#save-check-changes').click(function() {
+        var data = {
+            check_id: $('#edit-check-id').val(),
+            product_name: $('#edit-product-name').val(),
+            batch_number: $('#edit-batch-number').val(),
+            inspector_name: $('#edit-inspector-name').val(),
+            passed: $('#edit-passed').val() === 'true',
+            notes: $('#edit-notes').val()
+        };
+
+        $.ajax({
+            url: '/api/quality_check/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('Quality check updated successfully');
+                    location.reload();
+                } else {
+                    alert('Error updating quality check');
+                }
+            },
+            error: function() {
+                alert('Error updating quality check');
+            }
+        });
+    });
+
+    $('.delete-check').click(function() {
+        if (confirm('Are you sure you want to delete this quality check?')) {
+            var checkId = $(this).data('id');
+            $.ajax({
+                url: '/api/quality_check/delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({check_id: checkId}),
+                success: function(response) {
+                    if (response.success) {
+                        alert('Quality check deleted successfully');
+                        location.reload();
+                    } else {
+                        alert('Error deleting quality check');
+                    }
+                },
+                error: function() {
+                    alert('Error deleting quality check');
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

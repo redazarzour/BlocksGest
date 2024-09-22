@@ -88,3 +88,12 @@ class PurchaseOrderItem(db.Model):
     quantity = db.Column(db.Float, nullable=False)
     unit_price = db.Column(db.Float, nullable=False)
     raw_material = db.relationship('RawMaterial', backref='purchase_order_items')
+
+class QualityCheck(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_name = db.Column(db.String(100), nullable=False)
+    batch_number = db.Column(db.String(50), nullable=False)
+    check_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    inspector_name = db.Column(db.String(100), nullable=False)
+    passed = db.Column(db.Boolean, nullable=False)
+    notes = db.Column(db.Text)

@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, redirect, url_for, session, send_file
 from flask_babel import _
 from main import app, db, babel
-from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift, Supplier, PurchaseOrder, PurchaseOrderItem
+from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift, Supplier, PurchaseOrder, PurchaseOrderItem, QualityCheck
 from utils import update_inventory, create_production_schedule, process_sale
 from datetime import datetime, timedelta
 from sqlalchemy import func
@@ -505,3 +505,42 @@ def purchase_orders_report():
             'total_amount': float(po.total_amount)
         })
     return jsonify(po_data)
+
+@app.route('/quality_control')
+def quality_control():
+    checks = QualityCheck.query.order_by(QualityCheck.check_date.desc()).all()
+    return render_template('quality_control.html', checks=checks)
+
+@app.route('/api/quality_check/add', methods=['POST'])
+def add_quality_check():
+    data = request.json
+    new_check = QualityCheck(
+        product_name=data['product_name'],
+        batch_number=data['batch_number'],
+        inspector_name=data['inspector_name'],
+        passed=data['passed'],
+        notes=data.get('notes', '')
+    )
+    db.session.add(new_check)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Quality check added successfully'})
+
+@app.route('/api/quality_check/update', methods=['POST'])
+def update_quality_check():
+    data = request.json
+    check = QualityCheck.query.get_or_404(data['check_id'])
+    check.product_name = data['product_name']
+    check.batch_number = data['batch_number']
+    check.inspector_name = data['inspector_name']
+    check.passed = data['passed']
+    check.notes = data.get('notes', '')
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Quality check updated successfully'})
+
+@app.route('/api/quality_check/delete', methods=['POST'])
+def delete_quality_check():
+    data = request.json
+    check = QualityCheck.query.get_or_404(data['check_id'])
+    db.session.delete(check)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Quality check deleted successfully'})
