@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Inventory') }}{% endblock %}
+{% block title %}المخزون{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">{{ _('Inventory Management') }}</h1>
+<h1 class="mb-4">إدارة المخزون</h1>
 
-<h2>{{ _('Raw Materials') }}</h2>
+<h2>المواد الخام</h2>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>{{ _('Name') }}</th>
-            <th>{{ _('Quantity') }}</th>
-            <th>{{ _('Unit') }}</th>
-            <th>{{ _('Unit Price') }}</th>
+            <th>الاسم</th>
+            <th>الكمية</th>
+            <th>الوحدة</th>
+            <th>سعر الوحدة</th>
         </tr>
     </thead>
     <tbody>
@@ -21,19 +21,19 @@
             <td>{{ material.name }}</td>
             <td>{{ material.quantity }}</td>
             <td>{{ material.unit }}</td>
-            <td>${{ "%.2f"|format(material.unit_price) }}</td>
+            <td>{{ "%.2f"|format(material.unit_price) }} ريال</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<h2>{{ _('Finished Goods') }}</h2>
+<h2>البضائع الجاهزة</h2>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>{{ _('Name') }}</th>
-            <th>{{ _('Block Type') }}</th>
-            <th>{{ _('Quantity') }}</th>
+            <th>الاسم</th>
+            <th>نوع البلوك</th>
+            <th>الكمية</th>
         </tr>
     </thead>
     <tbody>
@@ -47,14 +47,14 @@
     </tbody>
 </table>
 
-<h2>{{ _('Work in Progress') }}</h2>
+<h2>العمل قيد التنفيذ</h2>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>{{ _('Product Name') }}</th>
-            <th>{{ _('Block Type') }}</th>
-            <th>{{ _('Quantity') }}</th>
-            <th>{{ _('Start Date') }}</th>
+            <th>اسم المنتج</th>
+            <th>نوع البلوك</th>
+            <th>الكمية</th>
+            <th>تاريخ البدء</th>
         </tr>
     </thead>
     <tbody>
@@ -69,25 +69,25 @@
     </tbody>
 </table>
 
-<h2>{{ _('Update Inventory') }}</h2>
+<h2>تحديث المخزون</h2>
 <form id="inventory-form">
     <div class="form-group">
-        <label for="item-type">{{ _('Item Type') }}</label>
+        <label for="item-type">نوع العنصر</label>
         <select class="form-control" id="item-type" required>
-            <option value="raw_material">{{ _('Raw Material') }}</option>
-            <option value="finished_good">{{ _('Finished Good') }}</option>
-            <option value="work_in_progress">{{ _('Work in Progress') }}</option>
+            <option value="raw_material">مادة خام</option>
+            <option value="finished_good">منتج نهائي</option>
+            <option value="work_in_progress">عمل قيد التنفيذ</option>
         </select>
     </div>
     <div class="form-group">
-        <label for="item-id">{{ _('Item ID') }}</label>
+        <label for="item-id">معرف العنصر</label>
         <input type="number" class="form-control" id="item-id" required>
     </div>
     <div class="form-group">
-        <label for="quantity">{{ _('New Quantity') }}</label>
+        <label for="quantity">الكمية الجديدة</label>
         <input type="number" class="form-control" id="quantity" step="0.01" required>
     </div>
-    <button type="submit" class="btn btn-primary">{{ _('Update Inventory') }}</button>
+    <button type="submit" class="btn btn-primary">تحديث المخزون</button>
 </form>
 
 {% endblock %}

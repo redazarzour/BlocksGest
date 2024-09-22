@@ -20,14 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
             
             if (result.success) {
-                alert(result.message);
+                alert('تم تحديث المخزون بنجاح');
                 location.reload();
             } else {
-                alert('Error: ' + result.message);
+                alert('خطأ: ' + result.message);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred while updating inventory');
+            console.error('خطأ:', error);
+            alert('حدث خطأ أثناء تحديث المخزون');
         }
     });
 });

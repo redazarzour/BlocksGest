@@ -1,6 +1,5 @@
 from flask import render_template, request, jsonify, redirect, url_for, session, send_file
-from flask_babel import _
-from main import app, db, babel
+from main import app, db
 from models import RawMaterial, FinishedGood, WorkInProgress, ProductionSchedule, SalesTransaction, Delivery, Payment, Worker, Shift, Supplier, PurchaseOrder, PurchaseOrderItem, QualityCheck
 from utils import update_inventory, process_sale
 from datetime import datetime, timedelta
@@ -189,16 +188,6 @@ def labor_report():
             'total_hours': float(total_hours)
         })
     return jsonify(worker_data)
-
-@app.route('/set_language/<lang>')
-def set_language(lang):
-    app.logger.debug(f"Setting language to: {lang}")
-    if lang in ['ar', 'fr', 'en']:
-        session['language'] = lang
-        app.logger.debug(f"Language set in session: {session['language']}")
-    else:
-        app.logger.warning(f"Invalid language requested: {lang}")
-    return redirect(request.referrer or url_for('index'))
 
 @app.route('/api/reports/kpi', methods=['GET'])
 def kpi_report():

@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Home') }}{% endblock %}
+{% block title %}الرئيسية{% endblock %}
 
 {% block content %}
-<h1 class="mb-4 text-center">{{ _('Welcome to BlocksManage') }}</h1>
+<h1 class="mb-4 text-center">مرحبًا بكم في بلوكس مانج</h1>
 
 <div class="row">
     <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-boxes fa-3x mb-3"></i>
-                <h5 class="card-title">{{ _('Inventory') }}</h5>
-                <a href="{{ url_for('inventory') }}" class="btn btn-primary">{{ _('Go to Inventory') }}</a>
+                <h5 class="card-title">المخزون</h5>
+                <a href="{{ url_for('inventory') }}" class="btn btn-primary">الذهاب إلى المخزون</a>
             </div>
         </div>
     </div>
@@ -19,8 +19,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-industry fa-3x mb-3"></i>
-                <h5 class="card-title">{{ _('Production') }}</h5>
-                <a href="{{ url_for('production') }}" class="btn btn-primary">{{ _('Go to Production') }}</a>
+                <h5 class="card-title">الإنتاج</h5>
+                <a href="{{ url_for('production') }}" class="btn btn-primary">الذهاب إلى الإنتاج</a>
             </div>
         </div>
     </div>
@@ -28,8 +28,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-chart-line fa-3x mb-3"></i>
-                <h5 class="card-title">{{ _('Sales') }}</h5>
-                <a href="{{ url_for('sales') }}" class="btn btn-primary">{{ _('Go to Sales') }}</a>
+                <h5 class="card-title">المبيعات</h5>
+                <a href="{{ url_for('sales') }}" class="btn btn-primary">الذهاب إلى المبيعات</a>
             </div>
         </div>
     </div>
@@ -37,8 +37,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-file-alt fa-3x mb-3"></i>
-                <h5 class="card-title">{{ _('Reports') }}</h5>
-                <a href="{{ url_for('reports') }}" class="btn btn-primary">{{ _('Go to Reports') }}</a>
+                <h5 class="card-title">التقارير</h5>
+                <a href="{{ url_for('reports') }}" class="btn btn-primary">الذهاب إلى التقارير</a>
             </div>
         </div>
     </div>
@@ -46,8 +46,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-users fa-3x mb-3"></i>
-                <h5 class="card-title">{{ _('Labor') }}</h5>
-                <a href="{{ url_for('labor') }}" class="btn btn-primary">{{ _('Go to Labor') }}</a>
+                <h5 class="card-title">العمالة</h5>
+                <a href="{{ url_for('labor') }}" class="btn btn-primary">الذهاب إلى العمالة</a>
             </div>
         </div>
     </div>
@@ -55,8 +55,8 @@
         <div class="card text-center">
             <div class="card-body">
                 <i class="fas fa-check-circle fa-3x mb-3"></i>
-                <h5 class="card-title">{{ _('Quality Control') }}</h5>
-                <a href="{{ url_for('quality_control') }}" class="btn btn-primary">{{ _('Go to Quality Control') }}</a>
+                <h5 class="card-title">مراقبة الجودة</h5>
+                <a href="{{ url_for('quality_control') }}" class="btn btn-primary">الذهاب إلى مراقبة الجودة</a>
             </div>
         </div>
     </div>
