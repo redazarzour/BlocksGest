@@ -78,7 +78,7 @@ class Supplier(db.Model):
 class PurchaseOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'), nullable=False)
-    order_date = db.Column(db.DateTime, nullable=False, default=datetime.)
+    order_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     delivery_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(20), nullable=False, default='Pending')
     total_amount = db.Column(db.Float, nullable=False)
@@ -96,7 +96,7 @@ class QualityCheck(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String(100), nullable=False)
     batch_number = db.Column(db.String(50), nullable=False)
-    check_date = db.Column(db.DateTime, nullable=False, default=datetime.)
+    check_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     inspector_name = db.Column(db.String(100), nullable=False)
     passed = db.Column(db.Boolean, nullable=False)
     notes = db.Column(db.Text)
