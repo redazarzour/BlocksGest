@@ -30,6 +30,7 @@ class ProductionSchedule(db.Model):
 
 class SalesTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
     product_name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
@@ -100,3 +101,21 @@ class QualityCheck(db.Model):
     inspector_name = db.Column(db.String(100), nullable=False)
     passed = db.Column(db.Boolean, nullable=False)
     notes = db.Column(db.Text)
+
+class Customer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    contact_person = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    sales_transactions = db.relationship('SalesTransaction', backref='customer', lazy=True)
+
+class Transporter(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    contact_person = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    is_customer = db.Column(db.Boolean, default=False)

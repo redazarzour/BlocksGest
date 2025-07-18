@@ -48,14 +48,22 @@ def create_production_schedule_api():
 @app.route('/sales')
 def sales():
     transactions = SalesTransaction.query.all()
-    return render_template('sales.html', transactions=transactions)
+    customers = Customer.query.all()
+    return render_template('sales.html', transactions=transactions, customers=customers)
 
 @app.route('/api/sales/process', methods=['POST'])
 def process_sale_api():
     data = request.json
     result = process_sale(data['product_name'], data['quantity'], data['total_amount'])
     if result['success']:
-        new_transaction = SalesTransaction.query.order_by(SalesTransaction.id.desc()).first()
+        new_transaction = SalesTransaction(
+            customer_id=data['customer_id'],
+            product_name=data['product_name'],
+            quantity=data['quantity'],
+            total_amount=data['total_amount']
+        )
+        db.session.add(new_transaction)
+        db.session.commit()
         delivery = Delivery(sales_transaction_id=new_transaction.id, quantity=data['quantity'])
         payment = Payment(sales_transaction_id=new_transaction.id, amount=data['total_amount'])
         db.session.add(delivery)
@@ -540,3 +548,44 @@ def delete_quality_check():
     db.session.delete(check)
     db.session.commit()
     return jsonify({'success': True, 'message': 'Quality check deleted successfully'})
+
+@app.route('/transporters')
+def transporters():
+    transporters = Transporter.query.all()
+    return render_template('transporters.html', transporters=transporters)
+
+@app.route('/api/transporter/add', methods=['POST'])
+def add_transporter():
+    data = request.json
+    new_transporter = Transporter(
+        name=data['name'],
+        contact_person=data['contact_person'],
+        email=data['email'],
+        phone=data['phone'],
+        address=data['address'],
+        is_customer=data['is_customer']
+    )
+    db.session.add(new_transporter)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Transporter added successfully'})
+
+@app.route('/api/transporter/update', methods=['POST'])
+def update_transporter():
+    data = request.json
+    transporter = Transporter.query.get_or_404(data['transporter_id'])
+    transporter.name = data['name']
+    transporter.contact_person = data['contact_person']
+    transporter.email = data['email']
+    transporter.phone = data['phone']
+    transporter.address = data['address']
+    transporter.is_customer = data['is_customer']
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Transporter updated successfully'})
+
+@app.route('/api/transporter/delete', methods=['POST'])
+def delete_transporter():
+    data = request.json
+    transporter = Transporter.query.get_or_404(data['transporter_id'])
+    db.session.delete(transporter)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Transporter deleted successfully'})

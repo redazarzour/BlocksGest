@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     salesForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const customerId = document.getElementById('customer').value;
         const productName = document.getElementById('product-name').value;
         const quantity = document.getElementById('quantity').value;
         const totalAmount = document.getElementById('total-amount').value;
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ product_name: productName, quantity: parseInt(quantity), total_amount: parseFloat(totalAmount) }),
+                body: JSON.stringify({ customer_id: parseInt(customerId), product_name: productName, quantity: parseInt(quantity), total_amount: parseFloat(totalAmount) }),
             });
             
             const result = await response.json();
